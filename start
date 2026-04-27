@@ -1,0 +1,3 @@
+#!/bin/bash
+export NVIM_APPNAME=nvim_kickstart
+exec nvim "$@"

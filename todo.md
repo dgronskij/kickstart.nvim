@@ -1,0 +1,20 @@
+- [ ] revise kickstart plugins
+- [ ] revise my config
+- init.lua
+- keymap.lua
+- logger.lua
+- sets.lua
+- telescope_custom.lua
+- util.lua
+- ytils.lua
+- astronvim/init.lua
+- astronvim/maping.lua
+- astronvim/saner_defaults.lua
+- plugins/astronvim_ovverides.lua
+- plugins/init.lua
+- plugins/ui.lua
+- plugins/ya.lua
+- lazy-lock.json
+- mason-lock.json
+- ensure astronvim config moved
+- ensure tmux integration works
