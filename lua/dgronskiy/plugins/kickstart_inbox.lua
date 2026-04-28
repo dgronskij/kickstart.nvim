@@ -191,6 +191,7 @@ return {
         },
         gopls = {
           autostart = true,
+          cmd = { 'gopls' }, -- this would pick up arcadia friendly
           settings = {
             gopls = {
               expandWorkspaceToModule = false,
@@ -689,7 +690,7 @@ return {
       end)
     end,
   },
-  { "Tastyep/structlog.nvim", lazy = false },
+  { "Tastyep/structlog.nvim", lazy = false, dependencies = { "rcarriga/nvim-notify" } },
   {
       "zapling/mason-lock.nvim",
       event = "VeryLazy",
