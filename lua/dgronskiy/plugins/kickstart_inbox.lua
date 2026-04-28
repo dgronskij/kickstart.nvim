@@ -403,29 +403,6 @@ return {
       signature = { enabled = true },
     },
   },
-
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
-    config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
-        },
-      }
-
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
-    end,
-  },
-
   -- Highlight todo, notes, etc in comments
   {
     'folke/todo-comments.nvim',
@@ -549,6 +526,204 @@ return {
           end
         end,
       })
+    end,
+  },
+  ---
+  ---
+  ---
+  ---
+  ---
+  ---
+  ---
+  {
+      "https://github.com/iautom8things/gitlink-vim",
+      event = "VeryLazy",
+  },
+  {
+    "ojroques/nvim-osc52",
+    event = "VeryLazy",
+    config = function()
+      vim.cmd([[nnoremap  <leader>y "+y]])
+      vim.cmd([[vnoremap  <leader>y "+y]]);
+      (function()
+        local function copy(lines, _)
+          require("osc52").copy(table.concat(lines, "\n"))
+        end
+
+        local function paste()
+          return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") }
+        end
+
+        vim.g.clipboard = {
+          name = "osc52",
+          copy = { ["+"] = copy, ["*"] = copy },
+          paste = { ["+"] = paste, ["*"] = paste },
+        }
+      end)()
+    end,
+    keys = {
+      -- {
+      --     "<leader>cp",
+      --     function()
+      --         require("osc52").copy_visual()
+      --     end,
+      --     mode = "v",
+      --     desc = "OSC52: [c]o[p] to cliboard",
+      -- },
+      -- {
+      --     "<leader>y",
+      --     function()
+      --         require("osc52").copy_visual()
+      --     end,
+      --     mode = "v",
+      --     desc = "OSC52: [y]ank to cliboard",
+      -- },
+    },
+  },
+  {
+      "https://github.com/editorconfig/editorconfig-vim",
+      event = "VeryLazy",
+  },
+  {
+    -- "https://github.com/niqodea/lasso.nvim",
+    "https://github.com/dgronskij/lasso.nvim",
+    commit = "dev",
+    event = "VeryLazy",
+    config = function()
+      local lasso = require("lasso")
+      lasso.setup({
+        marks_tracker_path = "/home/dgronskiy/vims/.lasso-marks",
+      })
+
+      -- Mark current file
+      vim.keymap.set("n", vim.g.mapleader .. "m", function()
+        lasso.mark_file()
+      end)
+
+      -- Go to marks tracker (editable, use `gf` to go to file under cursor)
+      vim.keymap.set("n", vim.g.mapleader .. "M", function()
+        lasso.open_marks_tracker()
+      end)
+
+      -- Jump to n-th marked file (n-th line of marks tracker)
+      vim.keymap.set("n", vim.g.mapleader .. "1", function()
+        lasso.open_marked_file(1)
+      end)
+      vim.keymap.set("n", vim.g.mapleader .. "2", function()
+        lasso.open_marked_file(2)
+      end)
+      vim.keymap.set("n", vim.g.mapleader .. "3", function()
+        lasso.open_marked_file(3)
+      end)
+      vim.keymap.set("n", vim.g.mapleader .. "4", function()
+        lasso.open_marked_file(4)
+      end)
+    end,
+  },
+  { "Tastyep/structlog.nvim", lazy = false },
+  {
+      "zapling/mason-lock.nvim",
+      event = "VeryLazy",
+      config = function()
+          require("mason-lock").setup({
+              -- keep this in sync with lazy lockfile setup!
+              lockfile_path = vim.fn.stdpath("config") .. "/mason-lock.json" -- (default)
+              -- lockfile_path = vim.fn.stdpath("config") .. "/lua/user/mason-lock.json",
+          })
+      end,
+  },
+  { -- https://github.com/nvim-treesitter/nvim-treesitter-context?tab=readme-ov-file#configuration
+      "nvim-treesitter/nvim-treesitter-context",
+      event = "VeryLazy",
+      opts = {
+          min_window_height = 10,
+          max_lines = 5,
+          multiline_threshold = 1,
+          mode = "topline",
+      },
+      -- keys = {
+      --     { -- conflicts with :cprev mapping
+      --         "[c",
+      --         function()
+      --             require("treesitter-context").go_to_context(vim.v.count1)
+      --         end,
+      --         mode = "n",
+      --         desc = "treesitter-context: jump to context (upwards)",
+      --         silent = true,
+      --     },
+      -- },
+  },
+  { -- https://github.com/theHamsta/crazy-node-movement
+      "theHamsta/crazy-node-movement",
+      event = "VeryLazy",
+      config = function()
+          require("nvim-treesitter.configs").setup({
+              node_movement = {
+                  enable = true,
+                  keymaps = {
+                      move_up = "˙", -- option-h
+                      move_down = "¬", --option-l
+                      move_left = "˚", -- option-k
+                      move_right = "∆", -- option-j
+                      -- swap_left = "<s-a-h>", -- will only swap when one of "swappable_textobjects" is selected
+                      -- swap_right = "<s-a-l>",
+                      select_current_node = "<leader><Cr>",
+                  },
+                  swappable_textobjects = { "@function.outer", "@parameter.inner", "@statement.outer" },
+                  allow_switch_parents = true, -- more craziness by switching parents while staying on the same level, false prevents you from accidentally jumping out of a function
+                  allow_next_parent = true, -- more craziness by going up one level if next node does not have children
+              },
+          })
+      end,
+  },
+  {
+      "mogelbrod/vim-jsonpath",
+      event = "VeryLazy",
+  },
+  { -- https://github.com/johmsalas/text-case.nvim?tab=readme-ov-file#example-for-lazyvim
+    "johmsalas/text-case.nvim",
+    dependencies = { "nvim-telescope/telescope.nvim" },
+    config = function()
+      require("textcase").setup({})
+      require("telescope").load_extension("textcase")
+      vim.api.nvim_set_keymap("n", "ga.", "<cmd>TextCaseOpenTelescope<CR>", { desc = "Telescope" })
+      vim.api.nvim_set_keymap("v", "ga.", "<cmd>TextCaseOpenTelescope<CR>", { desc = "Telescope" })
+    end,
+    cmd = {
+      -- NOTE: The Subs command name can be customized via the option "substitude_command_name"
+      -- "Subs",
+      "TextCaseOpenTelescope",
+      -- "TextCaseOpenTelescopeQuickChange",
+      -- "TextCaseOpenTelescopeLSPChange",
+      -- "TextCaseStartReplacingCommand",
+    },
+    lazy = false,
+    -- event = "VeryLazy",
+  },
+  { "nvim-zh/whitespace.nvim", lazy = false },
+  {
+    "https://github.com/junegunn/fzf",
+    event = "VeryLazy",
+  },
+  {
+    "https://github.com/junegunn/fzf.vim",
+    dependencies = {
+      "https://github.com/junegunn/fzf",
+    },
+    event = "VeryLazy",
+    config = function()
+      -- https://thevaluable.dev/fzf-vim-integration/
+      vim.g.fzf_vim = {}
+      vim.g.fzf_vim.preview_window = { "hidden,right,50%,<70(up,40%)", "ctrl-p" }
+      vim.g.fzf_preview_window = { "hidden,right,50%,<70(up,40%)", "ctrl-p" }
+      vim.g.fzf_dgronskiy_dict = {
+        options = '--bind "ctrl-j:down,ctrl-k:up"',
+      }
+
+      -- vim.g.fzf_vim.preview_window = { "right,10%", "ctrl-/" }
+      -- vim.g.fzf_vim.preview_window = { "right,10%", "ctrl-?" }
+      -- vim.g.fzf_preview_window = { "right,10%", "ctrl-?" }
+      vim.g.fzf_layout = { window = { width = 0.95, height = 0.95 } }
     end,
   },
 }
