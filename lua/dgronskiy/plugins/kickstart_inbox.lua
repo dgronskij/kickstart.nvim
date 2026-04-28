@@ -653,29 +653,49 @@ return {
       --     },
       -- },
   },
-  { -- https://github.com/theHamsta/crazy-node-movement
-      "theHamsta/crazy-node-movement",
-      event = "VeryLazy",
-      config = function()
-          require("nvim-treesitter.configs").setup({
-              node_movement = {
-                  enable = true,
-                  keymaps = {
-                      move_up = "˙", -- option-h
-                      move_down = "¬", --option-l
-                      move_left = "˚", -- option-k
-                      move_right = "∆", -- option-j
-                      -- swap_left = "<s-a-h>", -- will only swap when one of "swappable_textobjects" is selected
-                      -- swap_right = "<s-a-l>",
-                      select_current_node = "<leader><Cr>",
-                  },
-                  swappable_textobjects = { "@function.outer", "@parameter.inner", "@statement.outer" },
-                  allow_switch_parents = true, -- more craziness by switching parents while staying on the same level, false prevents you from accidentally jumping out of a function
-                  allow_next_parent = true, -- more craziness by going up one level if next node does not have children
-              },
-          })
-      end,
-  },
+  -- DISABLED: theHamsta/crazy-node-movement -- https://github.com/theHamsta/crazy-node-movement
+  -- Broken: nvim-treesitter (branch=main, the rewrite) permanently removed `define_modules` and
+  -- the entire third-party module API that this plugin depends on. Last upstream commit Sep 2023,
+  -- author inactive. The movement logic itself (vim.treesitter-based) is still valid.
+  --
+  -- Options to restore this functionality:
+  --
+  -- OPTION A: Fork and patch the plugin.
+  --   Only `lua/crazy-node-movement.lua:6` needs fixing -- replace the `define_modules` bootstrap
+  --   with a direct keymap setup that calls into `lua/crazy-node-movement/node_movement.lua`.
+  --   This preserves the original AST-traversal semantics: move_up/down/left/right navigate
+  --   the raw syntax tree (parent, first-child, prev-sibling, next-sibling).
+  --
+  -- OPTION B: Use nvim-treesitter/nvim-treesitter-textobjects (https://github.com/nvim-treesitter/nvim-treesitter-textobjects)
+  --   IMPORTANT SEMANTIC DIFFERENCE: textobjects.move does NOT traverse the AST structurally.
+  --   It jumps between named captures (@function.outer, @parameter.inner, etc.) in document order
+  --   (next/prev in the file), NOT up/down/left/right in the tree. There is no "go to parent node"
+  --   or "go to first child" concept. Also: textobjects.move is cursor-only, NOT visual -- it moves
+  --   the cursor but does not select/highlight the target node (unlike select_current_node above).
+  --
+  -- { -- https://github.com/theHamsta/crazy-node-movement
+  --     "theHamsta/crazy-node-movement",
+  --     event = "VeryLazy",
+  --     config = function()
+  --         require("nvim-treesitter.configs").setup({
+  --             node_movement = {
+  --                 enable = true,
+  --                 keymaps = {
+  --                     move_up = "˙", -- option-h
+  --                     move_down = "¬", --option-l
+  --                     move_left = "˚", -- option-k
+  --                     move_right = "∆", -- option-j
+  --                     -- swap_left = "<s-a-h>", -- will only swap when one of "swappable_textobjects" is selected
+  --                     -- swap_right = "<s-a-l>",
+  --                     select_current_node = "<leader><Cr>",
+  --                 },
+  --                 swappable_textobjects = { "@function.outer", "@parameter.inner", "@statement.outer" },
+  --                 allow_switch_parents = true, -- more craziness by switching parents while staying on the same level, false prevents you from accidentally jumping out of a function
+  --                 allow_next_parent = true, -- more craziness by going up one level if next node does not have children
+  --             },
+  --         })
+  --     end,
+  -- },
   {
       "mogelbrod/vim-jsonpath",
       event = "VeryLazy",
