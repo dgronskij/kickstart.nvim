@@ -146,7 +146,9 @@ return {
         ---@module 'mason.settings'
         ---@type MasonSettings
         ---@diagnostic disable-next-line: missing-fields
-        opts = {},
+        opts = {
+          PATH = "append",
+        },
       },
       -- Maps LSP server names between nvim-lspconfig and Mason package names.
       'mason-org/mason-lspconfig.nvim',
@@ -191,7 +193,8 @@ return {
         },
         gopls = {
           autostart = true,
-          cmd = { 'gopls' }, -- this would pick up arcadia friendly
+          -- cmd = {'/usr/bin/env', 'gopls'}, -- this would pick up arcadia friendly
+          -- cmd = {'/usr/bin/env', 'gopls'}, -- this would pick up arcadia friendly
           settings = {
             gopls = {
               expandWorkspaceToModule = false,
