@@ -27,6 +27,7 @@
   "opencode.nvim": { "branch": "main", "commit": "0e3ae21c6c4c8def63e3503b238870f1251288e4" },
   "plenary.nvim": { "branch": "master", "commit": "74b06c6c75e4eeb3108ec01852001636d85a932b" },
   "pustota.nvim": { "branch": "master", "commit": "ff664d10eb344c0dede3025c07ca45a75111c5ff" },
+  "smart-splits.nvim": { "branch": "master", "commit": "033a1ff747652dfa27bfbe90e0844b5cb59a741f" },
   "snacks.nvim": { "branch": "main", "commit": "ad9ede6a9cddf16cedbd31b8932d6dcdee9b716e" },
   "structlog.nvim": { "branch": "main", "commit": "45b26a2b1036bb93c0e83f4225e85ab3cee8f476" },
   "telescope-fzf-native.nvim": { "branch": "main", "commit": "6fea601bd2b694c6f2ae08a6c6fab14930c60e2c" },
