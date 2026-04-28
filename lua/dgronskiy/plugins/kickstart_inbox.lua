@@ -199,6 +199,15 @@ return {
         },
         pyright = {
           autostart = true,
+          root_dir = function(bufnr, on_dir)
+            local fname = vim.api.nvim_buf_get_name(bufnr)
+            on_dir(require("dgronskiy.ytils").guarded_pyright_root_directory(fname))
+          end,
+          capabilities = (function()
+            local caps = vim.lsp.protocol.make_client_capabilities()
+            caps.workspace.didChangeWatchedFiles.dynamicRegistration = false
+            return caps
+          end)(),
         },
         -- rust_analyzer = {},
         --

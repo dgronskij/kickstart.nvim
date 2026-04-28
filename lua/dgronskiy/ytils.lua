@@ -31,8 +31,8 @@ function M.is_inside_arc(path)
 end
 
 function M.is_ok_root_dir(path)
-    local util = require("dgronskiy_nvim.util")
-    local logger = require("dgronskiy_nvim.logger")
+    local util = require("dgronskiy.util")
+    local logger = require("dgronskiy.logger")
 
     if util.path.is_fs_root(path) then
         return false
@@ -61,7 +61,7 @@ end
 -- root_dir function in terms of `lspconfig`. Get inspiration here:
 -- https://github.com/neovim/nvim-lspconfig/tree/bfdf2e91e7297a54bcc09d3e092a12bff69a1cf4/lua/lspconfig/util.lua#L268
 function M.guarded_pyright_root_directory(startpath)
-    local logger = require("dgronskiy_nvim.logger")
+    local logger = require("dgronskiy.logger")
     local log_events = {}
 
     local is_inside_arc = M.is_inside_arc(startpath)
