@@ -184,9 +184,22 @@ return {
       --  See `:help lsp-config` for information about keys and how to configure
       ---@type table<string, vim.lsp.Config>
       local servers = {
-        clangd = {},
-        gopls = {},
-        pyright = {},
+        clangd = {
+          autostart = true,
+          -- TODO: consider adding "proto" back to filetypes if clangd improves .proto support
+          filetypes = { "c", "cpp" },
+        },
+        gopls = {
+          autostart = true,
+          settings = {
+            gopls = {
+              expandWorkspaceToModule = false,
+            },
+          },
+        },
+        pyright = {
+          autostart = true,
+        },
         -- rust_analyzer = {},
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
