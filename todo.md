@@ -18,3 +18,4 @@
 - mason-lock.json
 - ensure astronvim config moved
 - ensure tmux integration works
+- [x] polish
