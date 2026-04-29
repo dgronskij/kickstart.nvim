@@ -74,7 +74,7 @@ vim.o.breakindent = true -- TODO: what check
 -- Decrease mapped sequence wait time
 vim.o.timeoutlen = 300 -- TODO: check
 
-vim.o.list = true  -- TODO: check
+vim.o.list = false
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }  -- TODO: check
 
 vim.o.inccommand = 'split'  -- TODO: check

@@ -12,4 +12,9 @@
 - [ ] go to aliases rework
 - [ ] not sure that mason PATH=append mode is ok
 - [ ] mason-lock.json seems to no work
-- [ ] opencode.nvim cannot find active oc server
+- [x] opencode.nvim cannot find active oc server
+- [ ] better diff viewer
+- [ ] better find and replace?
+- [ ] diagnostics toggle
+- [ ] word wrap toggle
+- [ ] disable notifications toggle
