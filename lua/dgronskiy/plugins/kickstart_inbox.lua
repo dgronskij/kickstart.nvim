@@ -195,8 +195,14 @@ return {
           autostart = true,
           -- cmd = {'/usr/bin/env', 'gopls'}, -- this would pick up arcadia friendly
           -- cmd = {'/usr/bin/env', 'gopls'}, -- this would pick up arcadia friendly
+          -- cmd = {'ya', 'tool', 'gopls', 'serve'},
+          cmd = {'gopls', 'serve'},
           settings = {
             gopls = {
+              arcadiaIndexDirs = {
+                vim.fn.expand('$ARCADIA_ROOT/library/go'),
+                vim.fn.expand('$ARCADIA_ROOT/junk/dgronskiy/toolblock')
+              },
               expandWorkspaceToModule = false,
             },
           },
@@ -407,8 +413,7 @@ return {
       signature = { enabled = true },
     },
   },
-  -- Highlight todo, notes, etc in comments
-  {
+  { -- github.com/folke/todo-comments.nvim
     'folke/todo-comments.nvim',
     event = 'VimEnter',
     dependencies = { 'nvim-lua/plenary.nvim' },
