@@ -18,6 +18,11 @@ vim.cmd([[map <Leader>light :set background=light<CR>]])
 vim.cmd([[ vnoremap > >gv ]])
 vim.cmd([[ vnoremap < <gv ]])
 
+-- Commenting
+vim.cmd([[ nmap <leader>c<leader> gcc]])
+vim.cmd([[ vmap <leader>c<leader> gcgv]])
+vim.cmd([[ nmap <C-_> gcc]])  -- this actually means <C-/> !!!!
+vim.cmd([[ vmap <C-_> gcgv]])  -- this actually means <C-/> !!!!
 
 vim.cmd([[nnoremap <silent> z. :<C-u>normal! zszH<CR>]]) -- https://unix.stackexchange.com/a/585098
 

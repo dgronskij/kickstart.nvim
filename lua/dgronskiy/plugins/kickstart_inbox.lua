@@ -94,7 +94,8 @@ return {
       -- vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
       --
 
-      vim.keymap.set("n", "<leader>f<CR>", function () builtin.find_files({ hidden=true, follow=true, }) end, { desc = "Open file" })
+      -- vim.keymap.set("n", "<leader>f<CR>", function () builtin.find_files({ hidden=true, follow=true, }) end, { desc = "Open file all" })
+      vim.keymap.set("n", "<leader>f<CR>", function () builtin.find_files() end, { desc = "Open file" })
 
       -- This runs on LSP attach per buffer (see main LSP attach function in 'neovim/nvim-lspconfig' config for more info,
       -- it is better explained there). This allows easily switching between pickers if you prefer using something else!
