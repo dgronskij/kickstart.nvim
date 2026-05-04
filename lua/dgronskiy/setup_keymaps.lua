@@ -44,7 +44,7 @@ end
 vim.keymap.set("n", "<ESC>", function() vim.cmd([[ :noh ]]) end)
 vim.keymap.set("n", "<S-K>", ":FindExact <C-R><C-W><CR>", { desc = "FZF: find the word under cursor" })
 vim.keymap.set("n", "<leader><S-K>", function()
-    local ytils = require("dgronskiy_nvim.ytils")
+    local ytils = require("dgronskiy.ytils")
     local current_file_path = vim.fn.expand("%:p")
     local force_find_all = current_file_path:match("junk") ~= nil or current_file_path:match("contrib") ~= nil
     if ytils.arc_find_find_all or force_find_all then
@@ -76,25 +76,34 @@ vim.keymap.set("v", "<leader>cs", '"vy :ArcFind <C-R>v<CR>', { desc = "Arc: find
 vim.keymap.set("v", "<leader>fa", '"vy :ArcFiles <C-R>v<CR>', { desc = "Search selected [F]ile in [A]rc" })
 vim.keymap.set("v", "<leader>/", '"vy :BLines <C-R>v<CR>', { desc = "FZF: buffer lines" })
 
+local function _toggle_status_to_str(enabled)
+    return enabled and "enabled" or "disabled"
+end
+
+vim.keymap.set("n", "<leader>ud", function()
+    local enabled = not vim.diagnostic.is_enabled()
+    vim.diagnostic.enable(enabled)
+    print("Diagnostics " .. _toggle_status_to_str(enabled))
+end, { desc = "Toggle diagnostics" })
+
+vim.keymap.set("n", "<leader>uw", function()
+    vim.wo.wrap = not vim.wo.wrap
+    print("Wrap " .. _toggle_status_to_str(vim.wo.wrap))
+end, { desc = "Toggle word wrap" })
+
+-- tab navigation
+if true then (function()
+    vim.keymap.set("n", "]t", function()
+        vim.cmd.tabnext()
+    end, { desc = "Next tab" })
+
+    vim.keymap.set("n", "[t", function()
+        vim.cmd.tabprevious()
+    end, { desc = "Previous tab" })
+end)()
+end
 
 
-
-
-
-
--- -- Navigate tabs
--- maps.n["]t"] = {
---     function()
---         vim.cmd.tabnext()
---     end,
---     desc = "Next tab",
--- }
--- maps.n["[t"] = {
---     function()
---         vim.cmd.tabprevious()
---     end,
---     desc = "Previous tab",
--- }
 --
 -- if is_available("Comment.nvim") then
 --     maps.n["<leader>c"] = {
