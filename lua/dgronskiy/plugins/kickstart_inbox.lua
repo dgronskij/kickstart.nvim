@@ -202,6 +202,20 @@ return {
           -- cmd = {'ya', 'tool', 'gopls', 'serve'},
           cmd = {'gopls', 'serve'},
 
+          -- IMPORTANT: launch gopls with cwd = realpath($ARCADIA_ROOT). The
+          -- patched Yandex gopls calls findGoModDir(".") at startup to locate
+          -- `.arcadia.root` and stores the result as arcRoot. Later, in
+          -- cache/load.go, the patched code only honors arcadiaIndexDirs when
+          -- `scope.dir == arcRoot` (a string compare). Neovim resolves
+          -- symlinks when building file URIs, so workspaceFolders ends up at
+          -- e.g. /data/a/junk while the gopls process inherits cwd via
+          -- ARCADIA_ROOT=/a/junk (a symlink to /data/a). The string equality
+          -- then fails, arcadiaIndexDirs is silently ignored, and gopls
+          -- expands the load query to <workspace>/... — i.e. the entire
+          -- Arcadia tree. Forcing cmd_cwd to the resolved path keeps both
+          -- sides in sync.
+          cmd_cwd = vim.fn.resolve(vim.fn.expand('$ARCADIA_ROOT')),
+
           -- init_options is sent as `initializationOptions` in the very first
           -- LSP `initialize` request. This is critical: gopls reads these BEFORE
           -- creating its View, so GOFLAGS=-mod=vendor, GOPRIVATE and
@@ -238,17 +252,24 @@ return {
           -- IMPORTANT: every key in `init_options` above must also appear in
           -- settings.gopls below. nvim-lspconfig replies to gopls's
           -- `workspace/configuration` request with the contents of
-          -- settings.gopls. If we omit a key here, gopls treats that as
-          -- "the user just unset this setting" and the values from
-          -- initializationOptions are lost. Most notably, dropping build.env
-          -- makes gopls invoke child `go list` without GOFLAGS=-mod=vendor and
-          -- GOPRIVATE, which causes the goimports background cache to scan the
-          -- entire workspace tree (~175 MB strace, walking every Arcadia
-          -- project under /data/a/junk).
+          -- settings.gopls; omitting a key here makes gopls treat it as
+          -- "user just unset this setting", losing the value from
+          -- initializationOptions. Most notably, dropping build.env makes
+          -- gopls invoke child `go list` without GOFLAGS=-mod=vendor and
+          -- GOPRIVATE, which causes the goimports background cache to scan
+          -- the entire workspace tree.
           --
-          -- Keys mirror vscode-go's payload byte-for-byte (dotted form), plus
-          -- the legacy flat keys (arcadiaIndexDirs, expandWorkspaceToModule)
-          -- from the official Arcadia gopls nvim-lspconfig snippet.
+          -- IMPORTANT #2: do NOT mix dotted and flat spellings of the same
+          -- option. Per gopls' settings.go (Options.Set), gopls splits each
+          -- key on '.' and uses ONLY the last segment. So `build.arcadiaIndexDirs`
+          -- and `arcadiaIndexDirs` both resolve to `arcadiaIndexDirs`, and
+          -- presence of both produces an `Invalid settings: duplicate value
+          -- for arcadiaIndexDirs` error that REJECTS the entire settings
+          -- update. Same for any other dotted/flat pair.
+          --
+          -- We send the dotted spellings (vscode-go convention; gopls accepts
+          -- them via the same code path as flat) plus `expandWorkspaceToModule`
+          -- which has no dotted variant in vscode's payload.
           settings = {
             gopls = {
               ['build.env'] = {
@@ -266,16 +287,6 @@ return {
               ['verboseOutput'] = true,
               ['build.arcadiaIndexDirs'] = {
                 vim.fn.expand('junk/dgronskiy/toolblock'),
-              },
-
-              -- Legacy flat keys, kept for safety in case the patched gopls
-              -- reads them through a different code path than the dotted form.
-              arcadiaIndexDirs = {
-                -- vim.fn.expand('$ARCADIA_ROOT/library/go'),
-                -- vim.fn.expand('$ARCADIA_ROOT/junk/dgronskiy/toolblock')
-
-                -- vim.fn.expand('library/go'),
-                vim.fn.expand('junk/dgronskiy/toolblock')
               },
               expandWorkspaceToModule = false,
             },
