@@ -14,6 +14,7 @@ vim.diagnostic.config {
   jump = { float = true },
 }
 
+require 'dgronskiy.ytils'
 
 vim.cmd([[ command GitLink :echo gitlink#GitLink() ]])
 
