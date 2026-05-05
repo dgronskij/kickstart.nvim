@@ -251,9 +251,31 @@ return {
           -- from the official Arcadia gopls nvim-lspconfig snippet.
           settings = {
             gopls = {
+              ['build.env'] = {
+                CGO_ENABLED = '0',
+                GOFLAGS = '-mod=vendor',
+                GOPRIVATE = '*.yandex-team.ru,*.yandexcloud.net',
+              },
+              ['formatting.local'] = 'a.yandex-team.ru',
+              ['ui.codelenses'] = {
+                regenerate_cgo = false,
+                generate = false,
+              },
+              ['ui.navigation.importShortcut'] = 'Definition',
+              ['ui.semanticTokens'] = true,
+              ['verboseOutput'] = true,
+              ['build.arcadiaIndexDirs'] = {
+                vim.fn.expand('junk/dgronskiy/toolblock'),
+              },
+
+              -- Legacy flat keys, kept for safety in case the patched gopls
+              -- reads them through a different code path than the dotted form.
               arcadiaIndexDirs = {
-                vim.fn.expand('$ARCADIA_ROOT/library/go'),
-                vim.fn.expand('$ARCADIA_ROOT/junk/dgronskiy/toolblock')
+                -- vim.fn.expand('$ARCADIA_ROOT/library/go'),
+                -- vim.fn.expand('$ARCADIA_ROOT/junk/dgronskiy/toolblock')
+
+                -- vim.fn.expand('library/go'),
+                vim.fn.expand('junk/dgronskiy/toolblock')
               },
               expandWorkspaceToModule = false,
             },
