@@ -201,6 +201,54 @@ return {
           -- cmd = {'/usr/bin/env', 'gopls'}, -- this would pick up arcadia friendly
           -- cmd = {'ya', 'tool', 'gopls', 'serve'},
           cmd = {'gopls', 'serve'},
+
+          -- init_options is sent as `initializationOptions` in the very first
+          -- LSP `initialize` request. This is critical: gopls reads these BEFORE
+          -- creating its View, so GOFLAGS=-mod=vendor, GOPRIVATE and
+          -- build.arcadiaIndexDirs are honored at View-creation time. Without
+          -- this, gopls treats `a.yandex-team.ru/...` imports as unresolved
+          -- modules and ends up walking the entire Arcadia tree.
+          --
+          -- Keys are spelled with vscode-go's hierarchical "dotted" convention,
+          -- byte-for-byte matching what the official Yandex VSCode setup sends.
+          -- Note: dotted names are vscode-go's presentation, not gopls' canonical
+          -- API; the patched Arcadia gopls accepts them via its compat layer.
+          -- If a future gopls upgrade drops dotted-name compatibility, switch to
+          -- canonical flat names: env, local, codelenses, importShortcut,
+          -- semanticTokens, arcadiaIndexDirs.
+          init_options = {
+            ['build.env'] = {
+              CGO_ENABLED = '0',
+              GOFLAGS = '-mod=vendor',
+              GOPRIVATE = '*.yandex-team.ru,*.yandexcloud.net',
+            },
+            ['formatting.local'] = 'a.yandex-team.ru',
+            ['ui.codelenses'] = {
+              regenerate_cgo = false,
+              generate = false,
+            },
+            ['ui.navigation.importShortcut'] = 'Definition',
+            ['ui.semanticTokens'] = true,
+            ['verboseOutput'] = true,
+            ['build.arcadiaIndexDirs'] = {
+              vim.fn.expand('junk/dgronskiy/toolblock'),
+            },
+          },
+
+          -- IMPORTANT: every key in `init_options` above must also appear in
+          -- settings.gopls below. nvim-lspconfig replies to gopls's
+          -- `workspace/configuration` request with the contents of
+          -- settings.gopls. If we omit a key here, gopls treats that as
+          -- "the user just unset this setting" and the values from
+          -- initializationOptions are lost. Most notably, dropping build.env
+          -- makes gopls invoke child `go list` without GOFLAGS=-mod=vendor and
+          -- GOPRIVATE, which causes the goimports background cache to scan the
+          -- entire workspace tree (~175 MB strace, walking every Arcadia
+          -- project under /data/a/junk).
+          --
+          -- Keys mirror vscode-go's payload byte-for-byte (dotted form), plus
+          -- the legacy flat keys (arcadiaIndexDirs, expandWorkspaceToModule)
+          -- from the official Arcadia gopls nvim-lspconfig snippet.
           settings = {
             gopls = {
               arcadiaIndexDirs = {
