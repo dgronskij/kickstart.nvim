@@ -196,41 +196,38 @@ return {
           -- TODO: consider adding "proto" back to filetypes if clangd improves .proto support
           filetypes = { "c", "cpp" },
         },
-        gopls = {
-          autostart = true,
-          -- cmd = {'/usr/bin/env', 'gopls'}, -- this would pick up arcadia friendly
-          -- cmd = {'ya', 'tool', 'gopls', 'serve'},
-          cmd = {'gopls', 'serve'},
-
-          -- IMPORTANT: launch gopls with cwd = realpath($ARCADIA_ROOT). The
-          -- patched Yandex gopls calls findGoModDir(".") at startup to locate
-          -- `.arcadia.root` and stores the result as arcRoot. Later, in
-          -- cache/load.go, the patched code only honors arcadiaIndexDirs when
-          -- `scope.dir == arcRoot` (a string compare). Neovim resolves
-          -- symlinks when building file URIs, so workspaceFolders ends up at
-          -- e.g. /data/a/junk while the gopls process inherits cwd via
-          -- ARCADIA_ROOT=/a/junk (a symlink to /data/a). The string equality
-          -- then fails, arcadiaIndexDirs is silently ignored, and gopls
-          -- expands the load query to <workspace>/... — i.e. the entire
-          -- Arcadia tree. Forcing cmd_cwd to the resolved path keeps both
-          -- sides in sync.
-          cmd_cwd = vim.fn.resolve(vim.fn.expand('$ARCADIA_ROOT')),
-
-          -- init_options is sent as `initializationOptions` in the very first
-          -- LSP `initialize` request. This is critical: gopls reads these BEFORE
-          -- creating its View, so GOFLAGS=-mod=vendor, GOPRIVATE and
-          -- build.arcadiaIndexDirs are honored at View-creation time. Without
-          -- this, gopls treats `a.yandex-team.ru/...` imports as unresolved
-          -- modules and ends up walking the entire Arcadia tree.
+        gopls = (function()
+          -- Single source of truth for gopls settings. We send the same
+          -- payload through TWO LSP channels:
           --
-          -- Keys are spelled with vscode-go's hierarchical "dotted" convention,
-          -- byte-for-byte matching what the official Yandex VSCode setup sends.
-          -- Note: dotted names are vscode-go's presentation, not gopls' canonical
-          -- API; the patched Arcadia gopls accepts them via its compat layer.
-          -- If a future gopls upgrade drops dotted-name compatibility, switch to
-          -- canonical flat names: env, local, codelenses, importShortcut,
-          -- semanticTokens, arcadiaIndexDirs.
-          init_options = {
+          --   1. `init_options` -> `initializationOptions` in the very first
+          --      `initialize` request. The patched Yandex gopls reads these
+          --      BEFORE creating its View, so GOFLAGS=-mod=vendor, GOPRIVATE,
+          --      and build.arcadiaIndexDirs are honored at View-creation
+          --      time.
+          --
+          --   2. `settings.gopls` -> answer to gopls' subsequent
+          --      `workspace/configuration` request, AND the eager
+          --      `workspace/didChangeConfiguration` notification that
+          --      Neovim sends right after `initialized`. This second channel
+          --      is what gopls uses as the authoritative current config; if
+          --      a key from init_options is missing here, gopls treats it
+          --      as "user just unset this setting" and the init_options
+          --      value is lost.
+          --
+          -- Sharing one table avoids drift between the two — e.g. dropping
+          -- a directory from build.arcadiaIndexDirs in one place but not
+          -- the other (which silently breaks indexing for that directory).
+          --
+          -- Keys are spelled with vscode-go's hierarchical "dotted"
+          -- convention, byte-for-byte matching the official Yandex VSCode
+          -- setup. Per gopls' settings.go (Options.Set) gopls splits keys
+          -- on '.' and uses only the last segment, so dotted and flat are
+          -- equivalent server-side; mixing both for the same option causes
+          -- `Invalid settings: duplicate value for X` and rejects the
+          -- entire settings update. expandWorkspaceToModule has no dotted
+          -- form in vscode's payload, so it stays flat (no collision).
+          local gopls_settings = {
             ['build.env'] = {
               CGO_ENABLED = '0',
               GOFLAGS = '-mod=vendor',
@@ -246,52 +243,57 @@ return {
             ['verboseOutput'] = true,
             ['build.arcadiaIndexDirs'] = {
               vim.fn.expand('junk/dgronskiy/toolblock'),
+              vim.fn.expand('security/skotty'),
             },
-          },
+            expandWorkspaceToModule = false,
+          }
 
-          -- IMPORTANT: every key in `init_options` above must also appear in
-          -- settings.gopls below. nvim-lspconfig replies to gopls's
-          -- `workspace/configuration` request with the contents of
-          -- settings.gopls; omitting a key here makes gopls treat it as
-          -- "user just unset this setting", losing the value from
-          -- initializationOptions. Most notably, dropping build.env makes
-          -- gopls invoke child `go list` without GOFLAGS=-mod=vendor and
-          -- GOPRIVATE, which causes the goimports background cache to scan
-          -- the entire workspace tree.
+          -- Resolved (canonical, no-symlink) Arcadia root. Used for both
+          -- cwd and the PWD env override below.
           --
-          -- IMPORTANT #2: do NOT mix dotted and flat spellings of the same
-          -- option. Per gopls' settings.go (Options.Set), gopls splits each
-          -- key on '.' and uses ONLY the last segment. So `build.arcadiaIndexDirs`
-          -- and `arcadiaIndexDirs` both resolve to `arcadiaIndexDirs`, and
-          -- presence of both produces an `Invalid settings: duplicate value
-          -- for arcadiaIndexDirs` error that REJECTS the entire settings
-          -- update. Same for any other dotted/flat pair.
+          -- Why we need both:
           --
-          -- We send the dotted spellings (vscode-go convention; gopls accepts
-          -- them via the same code path as flat) plus `expandWorkspaceToModule`
-          -- which has no dotted variant in vscode's payload.
-          settings = {
-            gopls = {
-              ['build.env'] = {
-                CGO_ENABLED = '0',
-                GOFLAGS = '-mod=vendor',
-                GOPRIVATE = '*.yandex-team.ru,*.yandexcloud.net',
-              },
-              ['formatting.local'] = 'a.yandex-team.ru',
-              ['ui.codelenses'] = {
-                regenerate_cgo = false,
-                generate = false,
-              },
-              ['ui.navigation.importShortcut'] = 'Definition',
-              ['ui.semanticTokens'] = true,
-              ['verboseOutput'] = true,
-              ['build.arcadiaIndexDirs'] = {
-                vim.fn.expand('junk/dgronskiy/toolblock'),
-              },
-              expandWorkspaceToModule = false,
+          -- The patched gopls calls yatool.FindRepositoryGoModDir() ->
+          -- findGoModDir(".") at startup. Result becomes arcRoot. Later
+          -- in cache/load.go the patched code only honors arcadiaIndexDirs
+          -- when `scope.dir == arcRoot` (a raw string compare, with
+          -- EvalSymlinks gated to runtime.GOOS == "windows"). Neovim
+          -- resolves symlinks when constructing the workspaceFolders URI,
+          -- so scope.dir is the canonical form (e.g. /data/a/junk).
+          --
+          -- findGoModDir(".") in turn uses os.Getwd(). Go's os.Getwd has a
+          -- $PWD short-circuit: if stat($PWD).Ino == stat(".").Ino it
+          -- returns $PWD as-is (preserving the symlink form the parent
+          -- shell exported). Setting cmd_cwd alone is NOT sufficient —
+          -- when the parent's $PWD points at the same dir as cmd_cwd via
+          -- a symlink (e.g. tmux session at /a/junk while cmd_cwd is
+          -- /data/a/junk, both share the same inode through /a -> /data/a),
+          -- the inodes match and Go returns the symlink form. arcRoot
+          -- ends up /a/junk, scope.dir is /data/a/junk, the string compare
+          -- fails, and gopls expands the load query to scope.dir + "/..."
+          -- (the entire Arcadia tree).
+          --
+          -- Forcing PWD via cmd_env makes the inode comparison still match
+          -- (both stat the same dir) but Go returns the explicitly-set
+          -- canonical PWD value, so arcRoot == scope.dir and
+          -- arcadiaIndexDirs is honored.
+          local arcadia_root_resolved = vim.fn.resolve(vim.fn.expand('$ARCADIA_ROOT'))
+
+          return {
+            autostart = true,
+            -- cmd = {'/usr/bin/env', 'gopls'}, -- this would pick up arcadia friendly
+            -- cmd = {'ya', 'tool', 'gopls', 'serve'},
+            cmd = {'gopls', 'serve'},
+
+            cmd_cwd = arcadia_root_resolved,
+            cmd_env = {
+              PWD = arcadia_root_resolved,
             },
-          },
-        },
+
+            init_options = gopls_settings,
+            settings = { gopls = gopls_settings },
+          }
+        end)(),
         pyright = {
           autostart = true,
           root_dir = function(bufnr, on_dir)
