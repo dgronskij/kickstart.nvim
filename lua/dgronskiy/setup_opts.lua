@@ -89,3 +89,6 @@ vim.o.confirm = true  -- TODO: check
 
 vim.cmd([[ set wildmode=longest:full,full ]]) -- https://vi.stackexchange.com/a/11424/7248
 vim.cmd([[ set path+=$ARCADIA_ROOT ]])  -- set this in ~/.localrc !
+
+
+vim.opt.path:append(vim.split(vim.env.PATH, ":"))

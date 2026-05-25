@@ -66,10 +66,10 @@ return {
         extensions = {
           ['ui-select'] = { require('telescope.themes').get_dropdown() },
           ['fzf'] = { -- https://github.com/nvim-telescope/telescope-fzf-native.nvim#telescope-setup-and-configuration
-            fuzzy = true,                    -- false will only do exact matching
-            override_generic_sorter = true,  -- override the generic sorter
-            override_file_sorter = true,     -- override the file sorter
-            case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
+            fuzzy = true, -- false will only do exact matching
+            override_generic_sorter = true, -- override the generic sorter
+            override_file_sorter = true, -- override the file sorter
+            case_mode = 'smart_case', -- or "ignore_case" or "respect_case"
             -- the default case_mode is "smart_case"
           },
         },
@@ -94,8 +94,8 @@ return {
       -- vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
       --
 
-      -- vim.keymap.set("n", "<leader>f<CR>", function () builtin.find_files({ hidden=true, follow=true, }) end, { desc = "Open file all" })
-      vim.keymap.set("n", "<leader>f<CR>", function () builtin.find_files() end, { desc = "Open file" })
+      vim.keymap.set("n", "<leader>ff<CR>", function () builtin.find_files({ hidden=true, follow=true, }) end, { desc = "Open file all" })
+      vim.keymap.set('n', '<leader>f<CR>', function() builtin.find_files() end, { desc = 'Open file' })
 
       -- This runs on LSP attach per buffer (see main LSP attach function in 'neovim/nvim-lspconfig' config for more info,
       -- it is better explained there). This allows easily switching between pickers if you prefer using something else!
@@ -117,12 +117,17 @@ return {
         end,
       })
 
-      vim.keymap.set('n', '<leader>/', function()
-        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-          winblend = 10,
-          previewer = true,
-        })
-      end, { desc = '[/] Fuzzily search in current buffer' })
+      vim.keymap.set(
+        'n',
+        '<leader>/',
+        function()
+          builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+            winblend = 10,
+            previewer = true,
+          })
+        end,
+        { desc = '[/] Fuzzily search in current buffer' }
+      )
 
       vim.keymap.set(
         'n',
@@ -152,7 +157,7 @@ return {
         ---@type MasonSettings
         ---@diagnostic disable-next-line: missing-fields
         opts = {
-          PATH = "append",
+          PATH = 'append',
         },
       },
       -- Maps LSP server names between nvim-lspconfig and Mason package names.
@@ -194,7 +199,7 @@ return {
         clangd = {
           autostart = true,
           -- TODO: consider adding "proto" back to filetypes if clangd improves .proto support
-          filetypes = { "c", "cpp" },
+          filetypes = { 'c', 'cpp' },
         },
         gopls = (function()
           -- Single source of truth for gopls settings. We send the same
@@ -242,8 +247,8 @@ return {
             ['ui.semanticTokens'] = true,
             ['verboseOutput'] = true,
             ['build.arcadiaIndexDirs'] = {
-              vim.fn.expand('junk/dgronskiy/toolblock'),
-              vim.fn.expand('security/skotty'),
+              vim.fn.expand 'junk/dgronskiy/toolblock',
+              vim.fn.expand 'security/skotty',
             },
             expandWorkspaceToModule = false,
           }
@@ -277,13 +282,13 @@ return {
           -- (both stat the same dir) but Go returns the explicitly-set
           -- canonical PWD value, so arcRoot == scope.dir and
           -- arcadiaIndexDirs is honored.
-          local arcadia_root_resolved = vim.fn.resolve(vim.fn.expand('$ARCADIA_ROOT'))
+          local arcadia_root_resolved = vim.fn.resolve(vim.fn.expand '$ARCADIA_ROOT')
 
           return {
             autostart = true,
             -- cmd = {'/usr/bin/env', 'gopls'}, -- this would pick up arcadia friendly
             -- cmd = {'ya', 'tool', 'gopls', 'serve'},
-            cmd = {'gopls', 'serve'},
+            cmd = { 'gopls', 'serve' },
 
             cmd_cwd = arcadia_root_resolved,
             cmd_env = {
@@ -298,7 +303,7 @@ return {
           autostart = true,
           root_dir = function(bufnr, on_dir)
             local fname = vim.api.nvim_buf_get_name(bufnr)
-            on_dir(require("dgronskiy.ytils").guarded_pyright_root_directory(fname))
+            on_dir(require('dgronskiy.ytils').guarded_pyright_root_directory(fname))
           end,
           capabilities = (function()
             local caps = vim.lsp.protocol.make_client_capabilities()
@@ -483,13 +488,15 @@ return {
       },
 
       completion = {
+        menu = { auto_show = false },
+        ghost_text = { enabled = true, show_with_menu = false }, -- https://cmp.saghen.dev/configuration/completion.html#ghost-text
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
         documentation = { auto_show = false, auto_show_delay_ms = 500 },
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets' },
+        default = { 'lsp', 'path', 'snippets', 'buffer' },
       },
 
       snippets = { preset = 'luasnip' },
@@ -559,36 +566,32 @@ return {
       --  Check out: https://github.com/nvim-mini/mini.nvim
 
       -- https://github.com/echasnovski/mini.files?tab=readme-ov-file
-      require('mini.files').setup({
+      require('mini.files').setup {
         windows = {
           preview = true,
           width_focus = 50,
           width_nofocus = 15,
           width_preview = 50,
         },
-      })
+      }
 
       -- this is from :h mini.files
       local set_cwd = function()
         local path = (MiniFiles.get_fs_entry() or {}).path
-        if path == nil then return vim.notify('Cursor is not on valid entry') end
+        if path == nil then return vim.notify 'Cursor is not on valid entry' end
         vim.fn.chdir(vim.fs.dirname(path))
       end
 
       -- Yank in register full path of entry under cursor
       local yank_path = function()
         local path = (MiniFiles.get_fs_entry() or {}).path
-        if path == nil then return vim.notify('Cursor is not on valid entry') end
+        if path == nil then return vim.notify 'Cursor is not on valid entry' end
         vim.fn.setreg(vim.v.register, path)
       end
 
-      local go_in_close = function()
-        MiniFiles.go_in({ close_on_file = true })
-      end
+      local go_in_close = function() MiniFiles.go_in { close_on_file = true } end
 
-      local go_cwd = function()
-        MiniFiles.open()
-      end
+      local go_cwd = function() MiniFiles.open() end
 
       -- https://github.com/nvim-mini/mini.nvim/issues/760
       -- see: https://github.com/nvim-mini/mini.nvim/blob/a683bfe8e03293e3bb079e24c94e51977756a3ec/doc/mini-files.txt#L433-L448
@@ -616,9 +619,9 @@ return {
         pattern = 'MiniFilesBufferCreate',
         callback = function(args)
           local b = args.data.buf_id
-          vim.keymap.set('n', 'g.', set_cwd,     { buffer = b, desc = 'Set cwd' })
-          vim.keymap.set('n', 'g@', go_cwd,      { buffer = b, desc = 'Open cwd' })
-          vim.keymap.set('n', 'gy', yank_path,   { buffer = b, desc = 'Yank path' })
+          vim.keymap.set('n', 'g.', set_cwd, { buffer = b, desc = 'Set cwd' })
+          vim.keymap.set('n', 'g@', go_cwd, { buffer = b, desc = 'Open cwd' })
+          vim.keymap.set('n', 'gy', yank_path, { buffer = b, desc = 'Yank path' })
           vim.keymap.set('n', '<CR>', go_in_close, { buffer = b, desc = 'Go in plus' })
           map_split(b, 'gs', 'belowright horizontal')
           map_split(b, 'gv', 'belowright vertical')
@@ -708,28 +711,24 @@ return {
   ---
   ---
   {
-      "https://github.com/iautom8things/gitlink-vim",
-      event = "VeryLazy",
+    'https://github.com/iautom8things/gitlink-vim',
+    event = 'VeryLazy',
   },
   {
-    "ojroques/nvim-osc52",
-    event = "VeryLazy",
+    'ojroques/nvim-osc52',
+    event = 'VeryLazy',
     config = function()
-      vim.cmd([[nnoremap  <leader>y "+y]])
-      vim.cmd([[vnoremap  <leader>y "+y]]);
+      vim.cmd [[nnoremap  <leader>y "+y]]
+      vim.cmd [[vnoremap  <leader>y "+y]];
       (function()
-        local function copy(lines, _)
-          require("osc52").copy(table.concat(lines, "\n"))
-        end
+        local function copy(lines, _) require('osc52').copy(table.concat(lines, '\n')) end
 
-        local function paste()
-          return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") }
-        end
+        local function paste() return { vim.fn.split(vim.fn.getreg '', '\n'), vim.fn.getregtype '' } end
 
         vim.g.clipboard = {
-          name = "osc52",
-          copy = { ["+"] = copy, ["*"] = copy },
-          paste = { ["+"] = paste, ["*"] = paste },
+          name = 'osc52',
+          copy = { ['+'] = copy, ['*'] = copy },
+          paste = { ['+'] = paste, ['*'] = paste },
         }
       end)()
     end,
@@ -753,77 +752,65 @@ return {
     },
   },
   {
-      "https://github.com/editorconfig/editorconfig-vim",
-      event = "VeryLazy",
+    'https://github.com/editorconfig/editorconfig-vim',
+    event = 'VeryLazy',
   },
   {
     -- "https://github.com/niqodea/lasso.nvim",
-    "https://github.com/dgronskij/lasso.nvim",
-    commit = "dev",
-    event = "VeryLazy",
+    'https://github.com/dgronskij/lasso.nvim',
+    commit = 'dev',
+    event = 'VeryLazy',
     config = function()
-      local lasso = require("lasso")
-      lasso.setup({
-        marks_tracker_path = "/home/dgronskiy/vims/.lasso-marks",
-      })
+      local lasso = require 'lasso'
+      lasso.setup {
+        marks_tracker_path = '/home/dgronskiy/vims/.lasso-marks',
+      }
 
       -- Mark current file
-      vim.keymap.set("n", vim.g.mapleader .. "m", function()
-        lasso.mark_file()
-      end)
+      vim.keymap.set('n', vim.g.mapleader .. 'm', function() lasso.mark_file() end)
 
       -- Go to marks tracker (editable, use `gf` to go to file under cursor)
-      vim.keymap.set("n", vim.g.mapleader .. "M", function()
-        lasso.open_marks_tracker()
-      end)
+      vim.keymap.set('n', vim.g.mapleader .. 'M', function() lasso.open_marks_tracker() end)
 
       -- Jump to n-th marked file (n-th line of marks tracker)
-      vim.keymap.set("n", vim.g.mapleader .. "1", function()
-        lasso.open_marked_file(1)
-      end)
-      vim.keymap.set("n", vim.g.mapleader .. "2", function()
-        lasso.open_marked_file(2)
-      end)
-      vim.keymap.set("n", vim.g.mapleader .. "3", function()
-        lasso.open_marked_file(3)
-      end)
-      vim.keymap.set("n", vim.g.mapleader .. "4", function()
-        lasso.open_marked_file(4)
-      end)
+      vim.keymap.set('n', vim.g.mapleader .. '1', function() lasso.open_marked_file(1) end)
+      vim.keymap.set('n', vim.g.mapleader .. '2', function() lasso.open_marked_file(2) end)
+      vim.keymap.set('n', vim.g.mapleader .. '3', function() lasso.open_marked_file(3) end)
+      vim.keymap.set('n', vim.g.mapleader .. '4', function() lasso.open_marked_file(4) end)
     end,
   },
-  { "Tastyep/structlog.nvim", lazy = false, dependencies = { "rcarriga/nvim-notify" } },
+  { 'Tastyep/structlog.nvim', lazy = false, dependencies = { 'rcarriga/nvim-notify' } },
   {
-      "zapling/mason-lock.nvim",
-      event = "VeryLazy",
-      config = function()
-          require("mason-lock").setup({
-              -- keep this in sync with lazy lockfile setup!
-              lockfile_path = vim.fn.stdpath("config") .. "/mason-lock.json" -- (default)
-              -- lockfile_path = vim.fn.stdpath("config") .. "/lua/user/mason-lock.json",
-          })
-      end,
+    'zapling/mason-lock.nvim',
+    event = 'VeryLazy',
+    config = function()
+      require('mason-lock').setup {
+        -- keep this in sync with lazy lockfile setup!
+        lockfile_path = vim.fn.stdpath 'config' .. '/mason-lock.json', -- (default)
+        -- lockfile_path = vim.fn.stdpath("config") .. "/lua/user/mason-lock.json",
+      }
+    end,
   },
   { -- https://github.com/nvim-treesitter/nvim-treesitter-context?tab=readme-ov-file#configuration
-      "nvim-treesitter/nvim-treesitter-context",
-      event = "VeryLazy",
-      opts = {
-          min_window_height = 10,
-          max_lines = 5,
-          multiline_threshold = 1,
-          mode = "topline",
-      },
-      -- keys = {
-      --     { -- conflicts with :cprev mapping
-      --         "[c",
-      --         function()
-      --             require("treesitter-context").go_to_context(vim.v.count1)
-      --         end,
-      --         mode = "n",
-      --         desc = "treesitter-context: jump to context (upwards)",
-      --         silent = true,
-      --     },
-      -- },
+    'nvim-treesitter/nvim-treesitter-context',
+    event = 'VeryLazy',
+    opts = {
+      min_window_height = 10,
+      max_lines = 5,
+      multiline_threshold = 1,
+      mode = 'topline',
+    },
+    -- keys = {
+    --     { -- conflicts with :cprev mapping
+    --         "[c",
+    --         function()
+    --             require("treesitter-context").go_to_context(vim.v.count1)
+    --         end,
+    --         mode = "n",
+    --         desc = "treesitter-context: jump to context (upwards)",
+    --         silent = true,
+    --     },
+    -- },
   },
   -- DISABLED: theHamsta/crazy-node-movement -- https://github.com/theHamsta/crazy-node-movement
   -- Broken: nvim-treesitter (branch=main, the rewrite) permanently removed `define_modules` and
@@ -869,22 +856,22 @@ return {
   --     end,
   -- },
   {
-      "mogelbrod/vim-jsonpath",
-      event = "VeryLazy",
+    'mogelbrod/vim-jsonpath',
+    event = 'VeryLazy',
   },
   { -- https://github.com/johmsalas/text-case.nvim?tab=readme-ov-file#example-for-lazyvim
-    "johmsalas/text-case.nvim",
-    dependencies = { "nvim-telescope/telescope.nvim" },
+    'johmsalas/text-case.nvim',
+    dependencies = { 'nvim-telescope/telescope.nvim' },
     config = function()
-      require("textcase").setup({})
-      require("telescope").load_extension("textcase")
-      vim.api.nvim_set_keymap("n", "ga.", "<cmd>TextCaseOpenTelescope<CR>", { desc = "Telescope" })
-      vim.api.nvim_set_keymap("v", "ga.", "<cmd>TextCaseOpenTelescope<CR>", { desc = "Telescope" })
+      require('textcase').setup {}
+      require('telescope').load_extension 'textcase'
+      vim.api.nvim_set_keymap('n', 'ga.', '<cmd>TextCaseOpenTelescope<CR>', { desc = 'Telescope' })
+      vim.api.nvim_set_keymap('v', 'ga.', '<cmd>TextCaseOpenTelescope<CR>', { desc = 'Telescope' })
     end,
     cmd = {
       -- NOTE: The Subs command name can be customized via the option "substitude_command_name"
       -- "Subs",
-      "TextCaseOpenTelescope",
+      'TextCaseOpenTelescope',
       -- "TextCaseOpenTelescopeQuickChange",
       -- "TextCaseOpenTelescopeLSPChange",
       -- "TextCaseStartReplacingCommand",
@@ -892,22 +879,22 @@ return {
     lazy = false,
     -- event = "VeryLazy",
   },
-  { "nvim-zh/whitespace.nvim", lazy = false },
+  { 'nvim-zh/whitespace.nvim', lazy = false },
   {
-    "https://github.com/junegunn/fzf",
-    event = "VeryLazy",
+    'https://github.com/junegunn/fzf',
+    event = 'VeryLazy',
   },
   {
-    "https://github.com/junegunn/fzf.vim",
+    'https://github.com/junegunn/fzf.vim',
     dependencies = {
-      "https://github.com/junegunn/fzf",
+      'https://github.com/junegunn/fzf',
     },
-    event = "VeryLazy",
+    event = 'VeryLazy',
     config = function()
       -- https://thevaluable.dev/fzf-vim-integration/
       vim.g.fzf_vim = {}
-      vim.g.fzf_vim.preview_window = { "hidden,right,50%,<70(up,40%)", "ctrl-p" }
-      vim.g.fzf_preview_window = { "hidden,right,50%,<70(up,40%)", "ctrl-p" }
+      vim.g.fzf_vim.preview_window = { 'hidden,right,50%,<70(up,40%)', 'ctrl-p' }
+      vim.g.fzf_preview_window = { 'hidden,right,50%,<70(up,40%)', 'ctrl-p' }
       vim.g.fzf_dgronskiy_dict = {
         options = '--bind "ctrl-j:down,ctrl-k:up"',
       }
