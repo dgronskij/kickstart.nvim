@@ -471,11 +471,21 @@ return {
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
+        -- Completion behavior summary:
+        --   Nothing shows automatically while typing.
+        --   <C-n>        open menu and immediately insert the first match (vanilla Vim feel)
+        --   <C-p>        same but select upward
+        --   <Tab>        cycle to next item when menu is open, literal tab otherwise
+        --   <S-Tab>      cycle to previous item when menu is open
+        --   <CR>         accept current selection when menu is open, newline otherwise
+        --   <C-y>        also accepts (classic Vim, from 'default' preset)
+        --   <C-e>        dismiss menu and revert to what was typed
         preset = 'default',
-        ['<C-n>'] = { 'show', 'select_next', 'fallback' },
-        ['<C-p>'] = { 'show', 'select_prev', 'fallback' },
+        ['<C-n>'] = { 'show_and_insert', 'insert_next', 'fallback' },
+        ['<C-p>'] = { 'show_and_insert', 'insert_prev', 'fallback' },
         ['<CR>'] = { 'accept', 'fallback' },
-        ['<Esc>'] = { 'cancel', 'fallback' },
+        ['<Tab>'] = { 'select_next', 'fallback' },
+        ['<S-Tab>'] = { 'select_prev', 'fallback' },
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -489,7 +499,7 @@ return {
 
       completion = {
         menu = { auto_show = false },
-        ghost_text = { enabled = true, show_with_menu = false }, -- https://cmp.saghen.dev/configuration/completion.html#ghost-text
+        list = { selection = { preselect = true, auto_insert = true } },
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
         documentation = { auto_show = false, auto_show_delay_ms = 500 },
