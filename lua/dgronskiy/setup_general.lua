@@ -31,6 +31,11 @@ vim.cmd(
   [[ command! -bang -nargs=* FindAll call fzf#vim#grep('rg -uuu --column --line-number --no-heading --smart-case  --hidden --follow  --color "always" '.shellescape(<q-args>), 1, fzf#vim#with_preview(), <bang>0) ]]
 )
 
+-- vim.cmd(
+--   -- + case-insensitive
+--   [[ command! -bang -nargs=* ArcFind call fzf#vim#grep('/home/dgronskiy/tmp/golang_ugrep/arcgrep '.shellescape(<q-args>), 1, fzf#vim#with_preview(), <bang>0) ]]
+-- )
+
 vim.cmd(
   -- + case-insensitive
   [[ command! -bang -nargs=* ArcFind call fzf#vim#grep('ya tool cs -i --current-folder --no-contrib --no-junk --max all  --color "always" -- '.shellescape(<q-args>), 1, fzf#vim#with_preview(), <bang>0) ]]

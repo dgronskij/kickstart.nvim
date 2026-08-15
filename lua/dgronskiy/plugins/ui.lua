@@ -66,4 +66,28 @@ return {
         },
         cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
     },
+    -- { -- https://github.com/Pocco81/true-zen.nvim
+    --     "Pocco81/true-zen.nvim",
+    --     keys = {
+    --         { "<leader>zn", "<cmd>TZNarrow<CR>", desc = "TrueZen: Narrow" },
+    --         { "<leader>zf", "<cmd>TZFocus<CR>", desc = "TrueZen: Focus" },
+    --         { "<leader>zm", "<cmd>TZMinimalist<CR>", desc = "TrueZen: Minimalist" },
+    --         { "<leader>za", "<cmd>TZAtaraxis<CR>", desc = "TrueZen: Ataraxis" },
+    --     },
+    -- },
+    {
+        'MeanderingProgrammer/render-markdown.nvim',
+        dependencies = {
+            'nvim-treesitter/nvim-treesitter',
+            'nvim-tree/nvim-web-devicons',
+        },
+        ---@module 'render-markdown'
+        ---@type render.md.UserConfig
+        opts = {
+            enabled = false,
+        },
+        keys = {
+            { '<leader>md', function() require('render-markdown').toggle() end, desc = 'Toggle Markdown rendering' },
+        },
+    }
 }
