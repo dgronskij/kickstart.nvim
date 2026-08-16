@@ -103,11 +103,20 @@ vim.cmd([[nnoremap  <leader>lcda :lcd $A \| :pwd<CR>]])
 
 
 vim.api.nvim_create_user_command("CopyFileName", function(opts)
-  local file_path = vim.fn.expand("%") ---@type string
-  vim.fn.setreg("+", file_path) -- copy to system clipboard
-  print("Copied filename: ", file_path)
+  local file_path = vim.fn.expand("%:p") ---@type string
+  local file_reference = file_path
+
+  if opts.range > 0 and opts.line1 == opts.line2 then
+    file_reference = string.format("%s:L%d", file_path, opts.line1)
+  elseif opts.range > 1 then
+    file_reference = string.format("%s:L%d-L%d", file_path, opts.line1, opts.line2)
+  end
+
+  vim.fn.setreg("+", file_reference) -- copy to system clipboard
+  print("Copied file reference: ", file_reference)
 end, { force = true, range = true })
 vim.cmd([[nnoremap <leader>cfn <cmd>CopyFileName<CR>]])
+vim.cmd([[xnoremap <leader>cfn :<C-U>'<,'>CopyFileName<CR>]])
 
 vim.api.nvim_create_user_command("CopyFQN", function(opts)
   local word_under_cursor = vim.fn.expand("<cword>")
