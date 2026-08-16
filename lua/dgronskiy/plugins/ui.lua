@@ -1,3 +1,5 @@
+require("dgronskiy.toggle_view").setup_keymap()
+
 return {
     {
         -- https://github.com/ellisonleao/gruvbox.nvim#configuration
@@ -64,7 +66,14 @@ return {
                 jump_prev_row = { "<S-Enter>", mode = { "n", "v" } },
             },
         },
+        ft = { "csv", "tsv" },
         cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
+        config = function(_, opts)
+            require("csvview").setup(opts)
+            require("dgronskiy.toggle_view").register({ "csv", "tsv" }, function()
+                vim.cmd("CsvViewToggle")
+            end)
+        end,
     },
     -- { -- https://github.com/Pocco81/true-zen.nvim
     --     "Pocco81/true-zen.nvim",
@@ -81,13 +90,17 @@ return {
             'nvim-treesitter/nvim-treesitter',
             'nvim-tree/nvim-web-devicons',
         },
+        ft = { "markdown" },
         ---@module 'render-markdown'
         ---@type render.md.UserConfig
         opts = {
             enabled = false,
         },
-        keys = {
-            { '<leader>md', function() require('render-markdown').toggle() end, desc = 'Toggle Markdown rendering' },
-        },
+        config = function(_, opts)
+            require("render-markdown").setup(opts)
+            require("dgronskiy.toggle_view").register({ "markdown" }, function()
+                require("render-markdown").toggle()
+            end)
+        end,
     }
 }
