@@ -51,7 +51,14 @@ return {
         ---@module "csvview"
         ---@type CsvView.Options
         opts = {
-            parser = { comments = { "#", "//" } },
+            parser = {
+                comments = { "#", "//" },
+                delimiter = {
+                    -- Without a `csv` rule, CsvView detects the delimiter from these candidates.
+                    ft = { tsv = "\t" },
+                    fallbacks = { ",", "\t", ";", "|", ":", " " },
+                },
+            },
             keymaps = {
                 -- Text objects for selecting fields
                 textobject_field_inner = { "if", mode = { "o", "x" } },
